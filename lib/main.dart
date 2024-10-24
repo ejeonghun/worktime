@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:worktime/ui/MainScreen.dart';
-import 'package:worktime/ui/SplashScreen.dart';
-import 'package:worktime/ui/LoginScreen.dart';
+import 'package:worktime/screens/MainScreen.dart';
+import 'package:worktime/screens/SplashScreen.dart';
+import 'package:worktime/screens/LoginScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
