@@ -129,6 +129,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('token'); // 토큰 삭제
+    await prefs.remove('email'); // 저장된 이메일 삭제
+    await prefs.remove('password'); // 저장된 비밀번호 삭제 
 
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => LoginScreen()),

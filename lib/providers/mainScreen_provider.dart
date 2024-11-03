@@ -16,7 +16,6 @@ class MainScreenProvider with ChangeNotifier {
   String get error => _error;
 
   MainScreenProvider() {
-    // 생성자에서 즉시 데이터 로드
     _initData();
   }
 
@@ -31,9 +30,7 @@ class MainScreenProvider with ChangeNotifier {
 
       final success = await ApiService.checkIn();
       if (success) {
-        // checkIn 성공 후 메인 화면 데이터 새로고침
-        await fetchMainScreenData();
-        // 타이머 시작
+        await refreshData();
         startTimer();
       }
     } catch (e) {
@@ -52,8 +49,8 @@ class MainScreenProvider with ChangeNotifier {
 
       _mainScreenData = await ApiService.getMainScreenData();
       
-      // 체크인 시간이 있으면 타이머 시작
-      if (_mainScreenData?.userStatus.checkTime != null) {
+      // 체크인 상태 확인
+      if (_mainScreenData?.data.userInfo.workType != 'NOT_CHECK_IN') {
         startTimer();
       }
       
@@ -66,28 +63,43 @@ class MainScreenProvider with ChangeNotifier {
     }
   }
 
-  void startTimer() {
-    if (_mainScreenData?.userStatus.checkTime != null) {
-      _timer?.cancel();
-      _timer = Timer.periodic(Duration(minutes: 1), (timer) {
-        updateWorkingTime();
-      });
-      updateWorkingTime();
+  Future<void> refreshData() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await fetchMainScreenData();  // 기존 데이터 새로고침
+      
+      // 체크인 상태에 따라 타이머 시작
+      if (_mainScreenData?.data.userInfo.workType != 'NOT_CHECK_IN') {
+        startTimer();
+      }
+
+      _error = '';
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
+  void startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      updateWorkingTime();
+    });
+    updateWorkingTime();
+  }
+
   void updateWorkingTime() {
-    if (_mainScreenData?.userStatus.checkTime != null) {
-      final checkTime = DateTime.parse(_mainScreenData!.userStatus.checkTime);
-      final now = DateTime.now();
-      final difference = now.difference(checkTime);
-      
-      final hours = difference.inHours;
-      final minutes = difference.inMinutes % 60;
-      
-      _workingTime = '$hours:${minutes.toString().padLeft(2, '0')}';
-      notifyListeners();
-    }
+    // 현재는 단순히 타이머만 업데이트
+    final now = DateTime.now();
+    final hours = now.hour;
+    final minutes = now.minute;
+    
+    _workingTime = '$hours:${minutes.toString().padLeft(2, '0')}';
+    notifyListeners();
   }
 
   @override

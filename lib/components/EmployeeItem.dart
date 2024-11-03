@@ -1,54 +1,28 @@
 import 'package:flutter/material.dart';
 
 class EmployeeListItem extends StatelessWidget {
-  final String department;
-  final String name;
-  final String status;
-
+  final String memberName;
+  final String position;
+  final String workType;
+  
   const EmployeeListItem({
     Key? key,
-    required this.department,
-    required this.name,
-    required this.status,
+    required this.memberName,
+    required this.position,
+    required this.workType,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Row(
-        children: [
-          CircleAvatar(child: Text(name[0]), backgroundColor: Colors.grey[300]),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(department),
-                Text(name),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: _getStatusColor(status),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(status, style: TextStyle(color: Colors.white)),
-          ),
-        ],
+    return ListTile(
+      title: Text(memberName),
+      subtitle: Text(position),
+      trailing: Text(
+        workType == 'NOT_CHECK_IN' ? '미출근' : '출근',
+        style: TextStyle(
+          color: workType == 'NOT_CHECK_IN' ? Colors.red : Colors.green,
+        ),
       ),
     );
   }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case '출근': return Colors.green;
-      case '근무중': return Colors.blue;
-      case '휴가': return Colors.grey;
-      case '미출근': return Colors.red;
-      default: return Colors.grey;
-    }
-  }
-}
+} 

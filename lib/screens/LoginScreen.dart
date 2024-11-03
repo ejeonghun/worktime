@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'MainScreen.dart';
+import '../services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,21 +12,40 @@ class _LoginScreenState extends State<LoginScreen> {
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _login() async {
-    // 여기에서 실제 로그인 로직을 구현합니다.
-    // 예를 들어, 서버에 로그인 요청을 보내고 토큰을 받아옵니다.
-    // 여기서는 간단히 ID와 비밀번호가 비어있지 않으면 로그인 성공으로 가정합니다.
-    if (_idController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', 'dummy_token');
+  @override
+  void initState() {
+    super.initState();
+    _tryAutoLogin();
+  }
 
+  void _tryAutoLogin() async {
+    final success = await ApiService.autoLogin();
+    if (success && mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => MainScreen()),
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ID와 비밀번호를 입력해주세요.')),
+    }
+  }
+
+  void _login() async {
+    try {
+      if (_idController.text.isEmpty || _passwordController.text.isEmpty) {
+        ApiService.showErrorMessage('이메일과 비밀번호를 입력해주세요.');
+        return;
+      }
+
+      final token = await ApiService.login(
+        _idController.text,
+        _passwordController.text,
       );
+
+      if (token != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MainScreen()),
+        );
+      }
+    } catch (e) {
+      ApiService.showErrorMessage(e.toString());
     }
   }
 

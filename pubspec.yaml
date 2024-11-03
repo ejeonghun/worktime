@@ -41,6 +41,8 @@ dependencies:
   dio: ^5.7.0 # dio 네트워크 통신 관련 패키지
   geolocator: ^11.0.0 # geolocator 위치정보 관련 패키지
   shared_preferences: ^2.3.2 # shared_preferences 로컬 저장소 관련 패키지
+  intl: ^0.19.0
+  cached_network_image: ^3.4.1 
 
 
 dev_dependencies:

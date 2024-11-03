@@ -3,8 +3,14 @@ import 'package:worktime/screens/MainScreen.dart';
 import 'package:worktime/screens/SplashScreen.dart';
 import 'package:worktime/screens/LoginScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:worktime/services/api_service.dart';
 
-void main() {
+/// 전역 네비게이터 키
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiService.initialize();
   runApp(MyApp());
 }
 
@@ -12,6 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'WorkTime',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: TokenCheckScreen(),
