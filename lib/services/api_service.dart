@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:worktime/models/ScheduleModel.dart';
+import 'package:worktime/models/ScheduleUtils.dart';
 import 'package:worktime/screens/LoginScreen.dart';
+import 'package:worktime/utils/LocalPushNotifications.dart';
 import '../models/mainScreen_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';  // navigatorKey를 사용하기 위한 import
@@ -42,6 +45,7 @@ class ApiService {
           // 저장된 인증 정보로 재로그인 시도
           if (_savedEmail != null && _savedPassword != null) {
             try {
+              // 재로그인 시도
               await login(_savedEmail!, _savedPassword!, saveCredentials: false);
               // 원래 요청 재시도
               final opts = response.requestOptions;
@@ -57,7 +61,7 @@ class ApiService {
               return handler.resolve(newResponse);
             } catch (e) {
               debugPrint('재로그인 실패: $e');
-              // 재로그인 실패 시 로그인 화면으로 이동
+              // ��로그인 실패 시 로그인 화면으로 이동
               navigateToLogin();
             }
           } else {
@@ -67,10 +71,38 @@ class ApiService {
         }
         return handler.next(response);
       },
+      onError: (DioException e, handler) async {
+        if (e.response?.statusCode == 401) {
+          // 401 에러 발생 시 재로그인 시도
+          if (_savedEmail != null && _savedPassword != null) {
+            try {
+              await login(_savedEmail!, _savedPassword!, saveCredentials: false);
+              // 원래 요청 재시도
+              final opts = e.requestOptions;
+              final newResponse = await _dio.request(
+                opts.path,
+                options: Options(
+                  method: opts.method,
+                  headers: opts.headers,
+                ),
+                data: opts.data,
+                queryParameters: opts.queryParameters,
+              );
+              return handler.resolve(newResponse);
+            } catch (e) {
+              debugPrint('재로그인 실패: $e');
+              navigateToLogin();
+            }
+          } else {
+            navigateToLogin();
+          }
+        }
+        return handler.next(e);
+      },
     ));
   }
 
-  // 로그인 메서드
+  /// ���그인 메서드
   static Future<String?> login(
     String email, 
     String password, 
@@ -107,7 +139,7 @@ class ApiService {
     }
   }
 
-  // 저장된 인증 정보로 자동 로그인
+  /// 저장된 인증 정보로 자동 로그인
   static Future<bool> autoLogin() async {
     final prefs = await SharedPreferences.getInstance();
     final savedEmail = prefs.getString('email');
@@ -124,7 +156,7 @@ class ApiService {
     return false;
   }
 
-  // 로그아웃
+  /// 로그아웃
   static Future<void> logout() async {
     _token = null;
     _savedEmail = null;
@@ -154,6 +186,7 @@ class ApiService {
     }
   }
 
+  /// 메인화면 데이터 요청 
   static Future<MainScreenModel?> getMainScreenData() async {
     try {
       DateTime now = DateTime.now();
@@ -191,6 +224,8 @@ class ApiService {
     }
   }
 
+
+  /// 출근 요청 
   static Future<bool> checkIn() async {
     try {
       // 위치 권한 확인
@@ -221,12 +256,172 @@ class ApiService {
       );
 
       if (response.data['success'] == true) {
+        await LocalPushNotifications.scheduleHourlyNotification(); // 1시간 마다 알림 스케쥴
         return true;
       } else {
-        throw Exception(response.data['message'] ?? '체크인에 실패했습니다.');
+        // throw Exception(response.data['message'] ?? '체크인에 실패했��니다.');
+        return false;
       }
     } catch (e) {
       throw Exception('체크인 실패: $e');
+    }
+  }
+
+  /// 퇴근 요청
+  static Future<bool> checkOut() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('위치 권한이 거부되었습니다.');
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 허용해주세요.');
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high
+      );
+      debugPrint("위도 : ${position.latitude}, 경도 : ${position.longitude}");
+
+      final response = await _dio.post(
+        '$baseUrl/api/v1/work/checkOut',
+        data: {
+          "latitude": position.latitude,
+          "longitude": position.longitude,
+        },
+      );
+
+debugPrint(response.data.toString());
+      if (response.data['success'] == true) {
+        return true;
+      } else {
+        // throw Exception(response.data['message'] ?? '체크아웃에 실패했습니다.');
+        return false;
+      }
+    } catch (e) {
+      throw Exception('체크아웃 실패: $e');
+    }
+  }
+
+
+
+
+  /// 스케줄 관련 API
+  /// // api_services.dart에 추가할 Schedule 관련 메서드들
+  static Future<List<Schedule>> getSchedules(String yearMonth) async {
+    try {
+      final response = await _dio.get('$baseUrl/api/v1/schedule/list', 
+        queryParameters: {'date': yearMonth}
+      );
+      
+      if (response.statusCode == 200) {
+        // JSON 응답에서 'data' 필드가 리스트인지 확인
+        debugPrint(response.data.toString());
+        if (response.data['data'] is List) {
+          List<dynamic> data = response.data['data'];
+          return data.map((json) => Schedule.fromJson(json)).toList();
+        } else {
+          throw Exception('API 응답의 data 필드가 리스트가 아닙니다.');
+        }
+      }
+      throw Exception('Failed to load schedules');
+    } on DioException catch (e) {
+      debugPrint('DioError: ${e.message}');
+      debugPrint('Error Response: ${e.response?.data}');
+      throw Exception('일정 조회 실패: ${e.message}');
+    } catch (e) {
+      debugPrint('Unexpected error: $e');
+      throw Exception('일정 조회 중 오류 발생: $e');
+    }
+  }
+
+  static Future<Schedule> createSchedule(ScheduleCreateDto schedule) async {
+    try {
+      final response = await _dio.post(
+        '$baseUrl/api/v1/schedule/create',
+        data: schedule.toJson(),
+      );
+
+      if (response.statusCode == 200) {
+        return Schedule.fromJson(response.data['data']);
+      }
+      throw Exception('Failed to create schedule');
+    } on DioException catch (e) {
+      debugPrint('DioError: ${e.message}');
+      debugPrint('Error Response: ${e.response?.data}');
+      throw Exception('일정 생성 실패: ${e.message}');
+    } catch (e) {
+      debugPrint('Unexpected error: $e');
+      throw Exception('일정 생성 중 오류 발생: $e');
+    }
+  }
+
+  static Future<Schedule> updateSchedule(ScheduleCreateDto schedule) async {
+    try {
+      final response = await _dio.post(
+        '$baseUrl/api/v1/schedule/update',
+        data: schedule.toJson(),
+      );
+
+      if (response.statusCode == 200) {
+        return Schedule.fromJson(response.data['data']);
+      }
+      throw Exception('Failed to update schedule');
+    } on DioException catch (e) {
+      debugPrint('DioError: ${e.message}');
+      debugPrint('Error Response: ${e.response?.data}');
+      throw Exception('일정 수정 실패: ${e.message}');
+    } catch (e) {
+      debugPrint('Unexpected error: $e');
+      throw Exception('일정 수정 중 오류 발생: $e');
+    }
+  }
+
+  static Future<bool> deleteSchedule(int scheduleId) async {
+    try {
+      final response = await _dio.delete(
+        '$baseUrl/api/v1/schedule/delete?scheduleId=${scheduleId}',
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+      throw Exception('Failed to delete schedule');
+    } on DioException catch (e) {
+      debugPrint('DioError: ${e.message}');
+      debugPrint('Error Response: ${e.response?.data}');
+      throw Exception('일정 삭제 실패: ${e.message}');
+    } catch (e) {
+      debugPrint('Unexpected error: $e');
+      throw Exception('일정 삭제 중 오류 발생: $e');
+    }
+  }
+
+  static Future<List<Schedule>> getSchedulesByDate(DateTime date) async {
+    try {
+      final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+      final response = await _dio.get(
+        '$baseUrl/api/v1/schedule/detail_list',
+        queryParameters: {'date': formattedDate}
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint(formattedDate + "조회 ");
+        List<dynamic> data = response.data['data'];
+        return data.map((json) => Schedule.fromJson(json)).toList();
+      }
+      throw Exception('Failed to load schedules for date');
+    } on DioException catch (e) {
+      debugPrint('DioError: ${e.message}');
+      debugPrint('Error Response: ${e.response?.data}');
+      throw Exception('해당 날짜의 일정 조회 실패: ${e.message}');
+    } catch (e) {
+      debugPrint('Unexpected error: $e');
+      throw Exception('일정 조회 중 오류 발생: $e');
     }
   }
 }

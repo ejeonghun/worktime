@@ -1,6 +1,8 @@
 enum WorkType {
   NOT_CHECK_IN,
   CHECK_IN,
+  OVERTIME,
+  CHECK_OUT,
   // 필요한 다른 상태들 추가
 }
 
@@ -10,7 +12,11 @@ extension WorkTypeExtension on WorkType {
       case WorkType.NOT_CHECK_IN:
         return '미출근';
       case WorkType.CHECK_IN:
-        return '출근';
+        return '근무중';
+      case WorkType.OVERTIME:
+        return '추가근로';
+      case WorkType.CHECK_OUT:
+        return '퇴근';
       default:
         return '알 수 없음';
     }
@@ -43,10 +49,12 @@ class MainScreenModel {
 class MainScreenData {
   final UserInfo userInfo;
   final List<Department> deptList;
+  final String companyName;
 
   MainScreenData({
     required this.userInfo,
     required this.deptList,
+    required this.companyName,
   });
 
   factory MainScreenData.fromJson(Map<String, dynamic> json) {
@@ -55,6 +63,7 @@ class MainScreenData {
       deptList: (json['deptList'] as List)
           .map((e) => Department.fromJson(e))
           .toList(),
+      companyName: json['companyInfo'].toString(),
     );
   }
 }
@@ -65,6 +74,7 @@ class UserInfo {
   final String workType;
   final String position;
   final String? imagePath;
+  final DateTime? startTime;
 
   UserInfo({
     required this.memberId,
@@ -72,6 +82,7 @@ class UserInfo {
     required this.workType,
     required this.position,
     this.imagePath,
+    this.startTime,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -81,6 +92,7 @@ class UserInfo {
       workType: json['workType'],
       position: json['position'],
       imagePath: json['imagePath'],
+      startTime: json['startTime'] != null ? DateTime.parse(json['startTime']) : null,
     );
   }
 }
@@ -110,6 +122,7 @@ class Member {
   final String workType;
   final String position;
   final String? imagePath;
+  final DateTime? startTime;
 
   Member({
     required this.memberId,
@@ -117,6 +130,7 @@ class Member {
     required this.workType,
     required this.position,
     this.imagePath,
+    this.startTime,
   });
 
   factory Member.fromJson(Map<String, dynamic> json) {
@@ -126,6 +140,7 @@ class Member {
       workType: json['workType'],
       position: json['position'],
       imagePath: json['imagePath'],
+      startTime: json['startTime'] != null ? DateTime.parse(json['startTime']) : null,
     );
   }
 }
