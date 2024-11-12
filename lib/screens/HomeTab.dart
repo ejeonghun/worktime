@@ -224,49 +224,52 @@ class HomeTabContent extends StatelessWidget {
                   ),
                 
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: data.data.deptList.length,
-                    itemBuilder: (context, index) {
-                      final department = data.data.deptList[index];
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(16.0),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Colors.grey[300]!,
-                                  width: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 150.0),
+                    child: ListView.builder(
+                      itemCount: data.data.deptList.length,
+                      itemBuilder: (context, index) {
+                        final department = data.data.deptList[index];
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16.0),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey[300]!,
+                                    width: 1,
+                                  ),
                                 ),
                               ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  department.deptName,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    department.deptName,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  '${department.memberList.length}명',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
+                                  Text(
+                                    '${department.memberList.length}명',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          ...department.memberList.map((member) => 
-                            MemberListItem(member: member),
-                          ),
-                        ],
-                      );
-                    },
+                            ...department.memberList.map((member) => 
+                              MemberListItem(member: member),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],

@@ -52,6 +52,10 @@ class _ScheduleTabState extends State<ScheduleTab> {
             icon: Icon(Icons.refresh),
             onPressed: () => _provider.loadSchedules(),
           ),
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _showAddScheduleDialog(context),
+          ),
         ],
       ),
       body: Container(
@@ -225,11 +229,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddScheduleDialog(context),
-        label: Text('일정 추가'),
-        icon: Icon(Icons.add),
-      ),
+        
     );
   }
 

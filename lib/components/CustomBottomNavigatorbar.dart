@@ -16,7 +16,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
 Widget build(BuildContext context) {
   return BottomBar(
     child: Container(
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.only(bottom: 8, top: 8, left: 80, right: 80),
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -34,8 +34,7 @@ Widget build(BuildContext context) {
         children: [
           _buildNavItem(0, Icons.home, '홈'),
           _buildNavItem(1, Icons.calendar_today, '일정'),
-          _buildNavItem(2, Icons.notifications, '공지사항'),
-          _buildNavItem(3, Icons.person, '내 정보'),
+          _buildNavItem(2, Icons.person, '내 정보'),
         ],
       ),
     ),

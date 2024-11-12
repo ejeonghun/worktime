@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:worktime/screens/deptSelectScreen.dart';
 import 'package:worktime/utils/LocalPushNotifications.dart';
 import 'LoginScreen.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -93,16 +94,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
               });
             },
           ),
+          // Padding(
+          //   padding: const EdgeInsets.all(16.0),
+          //   child: ElevatedButton(
+          //     onPressed: () {
+          //       LocalPushNotifications.showSimpleNotification(
+          //         title: "일반 푸시 알림 제목",
+          //         body: "일반 푸시 알림 바디",
+          //         payload: "일반 푸시 알림 데이터");
+          //     },
+          //     child: Text('임시 알림'),
+          //     style: ElevatedButton.styleFrom(
+          //       minimumSize: Size(double.infinity, 50),
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.circular(10),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               onPressed: () {
-                LocalPushNotifications.showSimpleNotification(
-                  title: "일반 푸시 알림 제목",
-                  body: "일반 푸시 알림 바디",
-                  payload: "일반 푸시 알림 데이터");
+              Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => DeptSelectScreen(parentContext: context)), // context 전달
+      );
               },
-              child: Text('임시 알림'),
+              child: Text('부서 및 직급 관리'),
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(

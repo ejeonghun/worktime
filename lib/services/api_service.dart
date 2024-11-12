@@ -61,7 +61,7 @@ class ApiService {
               return handler.resolve(newResponse);
             } catch (e) {
               debugPrint('재로그인 실패: $e');
-              // ��로그인 실패 시 로그인 화면으로 이동
+              // 로그인 실패 시 로그인 화면으로 이동
               navigateToLogin();
             }
           } else {
@@ -102,7 +102,18 @@ class ApiService {
     ));
   }
 
-  /// ���그인 메서드
+
+
+  /** 
+   * 
+   * 
+   * 인증 관련 API
+   * 
+   * 
+   */
+
+
+  /// 로그인 메서드
   static Future<String?> login(
     String email, 
     String password, 
@@ -186,6 +197,43 @@ class ApiService {
     }
   }
 
+
+
+
+  /// 회원가입 메서드
+  static Future<String?> signUp(String email, String password, String name ,String verificationCode) async {
+    try {
+      final response = await _dio.post(
+        '$baseUrl/api/v1/auth/register',
+        data: {
+          'email': email,
+          'password': password,
+          'name': name,
+          'verifyCode': verificationCode,
+        },
+      );
+
+      if (response.statusCode == 201) {
+        return response.data['message']; // 성공 메시지 반환
+      }
+      return null;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? '회원가입에 실패했습니다.');
+    }
+  }
+
+
+
+  /** 
+   * 
+   * 
+   * 췰퇴근 관련 API
+   * 
+   * 
+   */
+
+
+
   /// 메인화면 데이터 요청 
   static Future<MainScreenModel?> getMainScreenData() async {
     try {
@@ -259,7 +307,7 @@ class ApiService {
         await LocalPushNotifications.scheduleHourlyNotification(); // 1시간 마다 알림 스케쥴
         return true;
       } else {
-        // throw Exception(response.data['message'] ?? '체크인에 실패했��니다.');
+        // throw Exception(response.data['message'] ?? '체크인에 실패했니다.');
         return false;
       }
     } catch (e) {
@@ -308,10 +356,13 @@ debugPrint(response.data.toString());
   }
 
 
-
-
-  /// 스케줄 관련 API
-  /// // api_services.dart에 추가할 Schedule 관련 메서드들
+  /** 
+   * 
+   * 
+   * 스케쥴 관련 API
+   * 
+   * 
+   */
   static Future<List<Schedule>> getSchedules(String yearMonth) async {
     try {
       final response = await _dio.get('$baseUrl/api/v1/schedule/list', 
@@ -424,4 +475,84 @@ debugPrint(response.data.toString());
       throw Exception('일정 조회 중 오류 발생: $e');
     }
   }
+
+
+
+  /** 
+   * 
+   * 
+   * 부서 관련 API
+   * 
+   * 
+   */
+
+    /// 부서 목록 요청 메서드
+  // static Future<Map<String, dynamic>> getDepartments(String verifyCode) async {
+  //   try {
+  //     final response = await _dio.get('$baseUrl/api/v1/dept/list?verifyCode=$verifyCode');
+  //     return response.data; // JSON 응답 반환
+  //   } on DioException catch (e) {
+  //     throw Exception('부서 목록 조회 실패: ${e.message}');
+  //   }
+  // }
+
+    static Future<Map<String, dynamic>> getDepartments() async {
+    try {
+      final response = await _dio.get('$baseUrl/api/v1/dept/mlist');
+      return response.data; // JSON 응답 반환
+    } on DioException catch (e) {
+      throw Exception('부서 목록 조회 실패: ${e.message}');
+    }
+  }
+
+  /// 부서 참가 메서드
+  static Future<void> joinDepartment(String deptId, String position) async {
+    try {
+      final response = await _dio.post(
+        '$baseUrl/api/v1/dept/join',
+        data: {
+          'deptId': deptId,
+          'position': position,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('부서 참가에 실패했습니다.');
+      }
+    } on DioException catch (e) {
+      throw Exception('부서 참가 중 오류 발생: ${e.message}');
+    }
+  }
+
+
+
+
+    /** 
+   * 
+   * 
+   * 회원 관련 API
+   * 
+   * 
+   */
+
+    /// 사용자 정보 조회 메서드
+  static Future<Map<String, dynamic>> getUserInfo() async {
+    try {
+      final response = await _dio.get('$baseUrl/api/v1/member/info');
+      return response.data; // 사용자 정보 반환
+    } on DioException catch (e) {
+      throw Exception('사용자 정보 조회 실패: ${e.message}');
+    }
+  }
+
+  /// 사용자 상세 정보 조회 메서드
+  static Future<Map<String, dynamic>> getUserDetail() async {
+    try {
+      final response = await _dio.get('$baseUrl/api/v1/member/detail');
+      return response.data; // 사용자 상세 정보 반환
+    } on DioException catch (e) {
+      throw Exception('사용자 상세 정보 조회 실패: ${e.message}');
+    }
+  }
+
 }
