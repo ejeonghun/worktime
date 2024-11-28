@@ -52,7 +52,7 @@
 ---
 
 ## 🖼 화면 구성
-### [화면 구성](https://github.com/ejeonghun/UniVersus_flutter/wiki/%ED%99%94%EB%A9%B4%EA%B5%AC%EC%84%B1)
+### [화면 구성](https://github.com/ejeonghun/worktime/wiki/%ED%99%94%EB%A9%B4-%EA%B5%AC%EC%84%B1)
 
 ## 🎨 Figma
 [![Figma](https://github.com/user-attachments/assets/d457d0c6-7d21-4cf2-bb01-34fbbbe82090)](https://www.figma.com/design/zeisHMhifJKOmdTbdyY2N6/%EC%B6%9C%ED%87%B4%EA%B7%BC%EC%95%B1?m=auto&t=x8NQpdmgyYuZETr3-1)
