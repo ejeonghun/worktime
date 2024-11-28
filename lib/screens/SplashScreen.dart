@@ -18,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen> {
   _loadData() async {
     // 여기에서 서버와의 통신 및 데이터 로딩을 수행합니다.
     // 예: API 호출, 로컬 데이터 로딩 등
-    await Future.delayed(Duration(seconds: 1)); // 예시로 2초 대기
+    await Future.delayed(Duration(seconds: 1)); // 1초 대기
 
     // 데이터 로딩이 완료되면 MainScreen으로 이동합니다.
     Navigator.of(context).pushReplacement(
